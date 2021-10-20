@@ -4,6 +4,8 @@ const express = require('express');
 const DynamoDB = require('./libs/DynamoDB');
 const { v4: uuid_v4 } = require('uuid');
 
+const STAGE =  process.env.STAGE || 'dev'
+
 const options = {
     endpoint: 'http://localhost:8000',
     accessKeyId: 'testKeyId',
@@ -11,7 +13,7 @@ const options = {
     region: 'eu-central-1'
 };
 
-const db = DynamoDB.DynamoDB(options);
+const db = DynamoDB.DynamoDB(options, STAGE);
 const app = express();
 
 app.use(express.json());
