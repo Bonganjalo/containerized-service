@@ -3,6 +3,7 @@
 const express = require('express');
 const DynamoDB = require('./libs/DynamoDB');
 const { v4: uuid_v4 } = require('uuid');
+const Utils = require('./libs/Utils');
 
 const STAGE =  process.env.STAGE || 'dev'
 
@@ -14,6 +15,7 @@ const options = {
 };
 
 const db = DynamoDB.DynamoDB(options, STAGE);
+const utils = Utils.Utils();
 const app = express();
 
 app.use(express.json());
@@ -21,6 +23,42 @@ app.use(express.json());
 app.post('/api/v1/', async (request, response) => {
     const MAX = 3;
     let error;
+
+    if (!utils.isRequestValid(request)) {  // Validate request
+        error = {
+          error: {
+            name: "INVALID_REQUEST",
+            message: "userId is required"
+          }
+        };
+    
+        console.error({
+          action: 'app:isRequestValid',
+          timestamp: new Date().toISOString(),
+          data: error
+        });
+    
+        response.status(400).json();
+        return;
+    }
+    
+    if (!utils.isUserIdString(request)) {  // Validate request
+        error = {
+          error: {
+            name: "INVALID_REQUEST",
+            message: "userId must be a string"
+          }
+        };
+    
+        console.error({
+          action: 'app:isUserIdString',
+          timestamp: new Date().toISOString(),
+          data: error
+        });
+    
+        response.status(400).json(error);
+        return;
+    }
 
     try {
         const streams = await db.getStreams('active-stream-dev', request.body.userId);
